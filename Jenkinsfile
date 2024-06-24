@@ -39,11 +39,11 @@ pipeline {
             }
         }
         stage('Clean') {
-            when{
-                expression{
-                    params.Status == true
-                }
-            }
+            // when{
+            //     expression{
+            //         params.Status == true
+            //     }
+            // }
             steps{
                 sh 'echo y | docker system prune'
             }
