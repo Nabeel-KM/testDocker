@@ -1,3 +1,4 @@
+def gv
 pipeline {
     agent any
     //{
@@ -24,6 +25,9 @@ pipeline {
             //     }
             // }
             steps {
+                script{
+                    gv = load "script.groovy"
+                }
                 echo "Building the version ${params.Version}"
                 sh 'docker build -t test .'
                 sh 'docker stop python || true'
