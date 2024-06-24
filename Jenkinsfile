@@ -41,7 +41,7 @@ pipeline {
         stage('Clean') {
             when{
                 expression{
-                    params.Status
+                    params.Status == true
                 }
             }
             steps{
