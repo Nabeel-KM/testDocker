@@ -39,7 +39,7 @@ jobs:
     # - name: Pull Image
     #   run: docker pull nabeelkm/test:latest
     - name: Deploy
-      run: docker run -d -p 5000:5000 python-test  
+      run: docker run -d -p 5000:5000 python-test   
       
       
   
