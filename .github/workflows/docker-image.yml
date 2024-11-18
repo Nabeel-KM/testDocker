@@ -10,7 +10,7 @@ jobs:
 
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, km]
 
     steps:
     - name: Checkout
@@ -38,8 +38,25 @@ jobs:
 
     # - name: Pull Image
     #   run: docker pull nabeelkm/test:latest
+
+    - name: Trivy Vulnerability Scan
+      uses: aquasecurity/trivy-action@0.28.0
+      with:
+        image-ref: $IMAGE_NAME_TAG
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true  # Skips unfixed vulnerabilities
+        format: table 
+        
     - name: Deploy
       run: docker run -d -p 5000:5000 python-test   
+
+    - name: View Docker status
+        run: |
+          docker ps
+
+      - name: Cleaning Server
+        run: |
+          echo y | docker image prune 
       
       
   
