@@ -10,7 +10,8 @@ jobs:
 
   build:
   
-    runs-on: [self-hosted, local]
+    # runs-on: [self-hosted, local]
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
