@@ -56,9 +56,12 @@ jobs:
     steps: 
     - name: Pull Image
       run: docker pull nabeelkm/test:latest
+
+    - name: Stop old containers
+      run: docker stop nabeelkm/test:latest || true && docker rm nabeelkm/test:latest || true
         
     - name: Deploy
-      run: docker run -d -p 5000:5000 python-test   
+      run: docker run -d -p 5000:5000 nabeelkm/test:latest   
 
     - name: View Docker status
       run: |
