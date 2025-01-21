@@ -34,7 +34,7 @@ jobs:
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
     - name: build and push docker image to registry
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
           push: true
           tags: nabeelkm/test:latest
@@ -43,9 +43,9 @@ jobs:
     #   run: docker pull nabeelkm/test:latest
 
     - name: Trivy Vulnerability Scan
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@0.29.0
       with:
-        image-ref: python-test
+        image-ref: nabeelkm/test:latest
         severity: CRITICAL,HIGH
         ignore-unfixed: true  # Skips unfixed vulnerabilities
         format: table 
