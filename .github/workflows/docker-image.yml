@@ -88,14 +88,14 @@ jobs:
     - name: Verify deployment
       run: |
         echo "Health check starting..."
-        for i in {1..10}; do
+        for i in {1..5}; do
           if curl -sSf http://localhost:$HOST_PORT/ > /dev/null; then
             echo "Application healthy!"
             docker tag nabeelkm/test:latest nabeelkm/test:stable
             docker push nabeelkm/test:stable
             exit 0
           fi
-          echo "Attempt $i/10 failed. Retrying in 5 seconds..."
+          echo "Attempt $i/5 failed. Retrying in 5 seconds..."
           sleep 5
         done
         echo "Health check failed after 10 attempts"
@@ -139,6 +139,7 @@ jobs:
     - name: Verify rollback
       run: |
         echo "Verifying rollback..."
+        sleep 15
         curl --retry 10 --retry-delay 5 --retry-connrefused -sSf http://localhost:$HOST_PORT/
 
     # - name: Notify team
