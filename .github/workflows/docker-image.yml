@@ -23,12 +23,13 @@ jobs:
       with:
         languages: python  # Update based on your tech stack
   
-    - name: Dependency Scan
-      uses: dependency-check/Dependency-Check-Action@main
+    - name: OWASP Dependency Check
+      uses: OWASP/dependency-check-action@v3.2.0
       with:
-        project: 'test'
+        project: 'your-project-name'
         format: 'HTML'
         fail_on_cvss: 7
+        scan_dir: .
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
