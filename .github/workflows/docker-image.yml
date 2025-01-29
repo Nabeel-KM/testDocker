@@ -12,14 +12,21 @@ jobs:
   
     # runs-on: [self-hosted, local]
     runs-on: ubuntu-latest
-
+    env:
+      CONTAINER_NAME: python-test
+      IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+      HOST_PORT: 5000
+      CONTAINER_PORT: 5000
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
           clean: False
 
-    # - uses: sonarsource/sonarqube-scan-action@master
+    # - uses: sonarsource/sonarqube-scan-action@master    # - name: Cleaning Server
+    #   run: |
+    #       echo y | docker image prune -a
+      
     #   env:
     #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}    
@@ -36,8 +43,11 @@ jobs:
     - name: build and push docker image to registry
       uses: docker/build-push-action@v6
       with:
+          context: .
           push: true
-          tags: nabeelkm/test:latest
+          tags: ${{ env.IMAGE_NAME_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
     # - name: Pull Image
     #   run: docker pull nabeelkm/test:latest
@@ -45,7 +55,7 @@ jobs:
     - name: Trivy Vulnerability Scan
       uses: aquasecurity/trivy-action@0.29.0
       with:
-        image-ref: nabeelkm/test:latest
+        image-ref: ${{ env.IMAGE_NAME_TAG }}
         severity: CRITICAL,HIGH
         ignore-unfixed: true  # Skips unfixed vulnerabilities
         format: table 
@@ -53,23 +63,41 @@ jobs:
   deploy:
 
     runs-on: [self-hosted, local]
+    env:
+      CONTAINER_NAME: python-test
+      IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+      HOST_PORT: 5000
+      CONTAINER_PORT: 5000
     steps: 
     - name: Pull Image
-      run: docker pull nabeelkm/test:latest
+      run: docker pull ${{ env.IMAGE_NAME_TAG }}
 
     - name: Stop old containers
-      run: docker stop nabeelkm/test:latest || true && docker rm nabeelkm/test:latest || true
+      run: docker stop $CONTAINER_NAME || true && docker rm $CONTAINER_NAME || true
         
     - name: Deploy
-      run: docker run -d -p 5000:5000 nabeelkm/test:latest   
+      run: |
+            docker run -d \
+            -p $HOST_PORT:$CONTAINER_PORT \
+            --restart unless-stopped \
+            --name $CONTAINER_NAME \
+            ${{ env.IMAGE_NAME_TAG }}
 
     - name: View Docker status
       run: |
           docker ps
-
-    - name: Cleaning Server
+    - name: Verify deployment
       run: |
-          echo y | docker image prune -a
+          docker ps
+          curl --retry 5 --retry-delay 5 -sS http://localhost:$HOST_PORT/
+
+    - name: Cleanup unused images
+      run: |
+          docker image prune -a --force --filter "until=24h"
+          docker system prune --force --filter "until=24h"
+    # - name: Cleaning Server
+    #   run: |
+    #       echo y | docker image prune -a
       
       
   
