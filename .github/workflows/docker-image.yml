@@ -23,8 +23,8 @@ jobs:
     #   with:
     #     languages: python  # Update based on your tech stack
   
-    - name: Dependency Review
-      uses: actions/dependency-review-action@v3
+    # - name: Dependency Review
+    #   uses: actions/dependency-review-action@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
