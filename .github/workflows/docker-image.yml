@@ -18,14 +18,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # - name: CodeQL Analysis
-    #   uses: github/codeql-action/analyze@v2
-    #   with:
-    #     languages: python  # Update based on your tech stack
-  
-    # - name: Dependency Review
-    #   uses: actions/dependency-review-action@v3
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
@@ -39,11 +31,11 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build Docker image
-      uses: docker/build-push-action@v5  # Downgraded to stable v5
+      uses: docker/build-push-action@v5
       with:
         context: .
-        tags: ${{ env.IMAGE_NAME_TAG }}
-        load: true  # Makes image available locally
+        tags: ${{ env.IMAGE_NAME_TAG }},nabeelkm/test:latest
+        load: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -58,7 +50,7 @@ jobs:
     - name: Push Docker image
       uses: docker/build-push-action@v5
       with:
-        tags: ${{ env.IMAGE_NAME_TAG }}
+        tags: ${{ env.IMAGE_NAME_TAG }},nabeelkm/test:latest
         push: true
         cache-from: type=gha
 
@@ -67,7 +59,6 @@ jobs:
     needs: [build]
     env:
       CONTAINER_NAME: python-test
-      IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}
       HOST_PORT: 5000
       CONTAINER_PORT: 5000
       
@@ -79,7 +70,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Pull Image
-      run: docker pull ${{ env.IMAGE_NAME_TAG }}
+      run: docker pull nabeelkm/test:latest
 
     - name: Stop old containers
       run: |
@@ -92,20 +83,72 @@ jobs:
           -p $HOST_PORT:$CONTAINER_PORT \
           --restart unless-stopped \
           --name $CONTAINER_NAME \
-          ${{ env.IMAGE_NAME_TAG }}
+          nabeelkm/test:latest
 
     - name: Verify deployment
       run: |
-        echo "Waiting for container to become healthy..."
-        sleep 15  # Give application time to initialize
-        docker ps
-        docker logs $CONTAINER_NAME  # Add logging inspection
-        curl --retry 10 --retry-delay 10 --retry-connrefused -sS http://localhost:$HOST_PORT/
+        echo "Health check starting..."
+        for i in {1..10}; do
+          if curl -sSf http://localhost:$HOST_PORT/ > /dev/null; then
+            echo "Application healthy!"
+            docker tag nabeelkm/test:latest nabeelkm/test:stable
+            docker push nabeelkm/test:stable
+            exit 0
+          fi
+          echo "Attempt $i/10 failed. Retrying in 5 seconds..."
+          sleep 5
+        done
+        echo "Health check failed after 10 attempts"
+        exit 1
 
     - name: Cleanup unused images
       run: |
         docker image prune -a --force --filter "until=24h"
         docker system prune --force --filter "until=24h"
+
+  rollback:
+    runs-on: [self-hosted, local]
+    needs: [deploy]
+    if: failure() && needs.deploy.result == 'failure'
+    env:
+      CONTAINER_NAME: python-test
+      HOST_PORT: 5000
+      CONTAINER_PORT: 5000
+      
+    steps:
+    - name: Login to Docker Registry
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Stop faulty container
+      run: |
+        docker stop $CONTAINER_NAME || true
+        docker rm $CONTAINER_NAME || true
+
+    - name: Rollback to stable version
+      run: |
+        docker pull nabeelkm/test:stable
+        docker run -d \
+          -p $HOST_PORT:$CONTAINER_PORT \
+          --restart unless-stopped \
+          --name $CONTAINER_NAME \
+          nabeelkm/test:stable
+
+    - name: Verify rollback
+      run: |
+        echo "Verifying rollback..."
+        curl --retry 10 --retry-delay 5 --retry-connrefused -sSf http://localhost:$HOST_PORT/
+
+    # - name: Notify team
+    #   uses: acts-rs/notify-slack@v1
+    #   with:
+    #     webhook: ${{ secrets.SLACK_WEBHOOK }}
+    #     status: ${{ job.status }}
+    #     text: "Automated rollback performed to stable version"
+    #   if: always()
+
 
 # name: Docker Image CI & CD
 
@@ -114,99 +157,208 @@ jobs:
 #     branches: 
 #       - main
 
-
 # jobs:
-
 #   build:
-  
-#     # runs-on: [self-hosted, local]
 #     runs-on: ubuntu-latest
 #     env:
 #       CONTAINER_NAME: python-test
-#       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+#       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}
 #       HOST_PORT: 5000
 #       CONTAINER_PORT: 5000
+      
 #     steps:
 #     - name: Checkout
 #       uses: actions/checkout@v4
+
+#     # - name: CodeQL Analysis
+#     #   uses: github/codeql-action/analyze@v2
+#     #   with:
+#     #     languages: python  # Update based on your tech stack
+  
+#     # - name: Dependency Review
+#     #   uses: actions/dependency-review-action@v3
+
+#     - name: Set up Docker Buildx
+#       uses: docker/setup-buildx-action@v3
 #       with:
-#           clean: False
+#         driver-opts: |
+#           image=moby/buildkit:latest
 
-#     # - uses: sonarsource/sonarqube-scan-action@master    # - name: Cleaning Server
-#     #   run: |
-#     #       echo y | docker image prune -a
-      
-#     #   env:
-#     #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#     #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}    
-      
-#     # - name: Build the Docker image
-#     #   run: docker build -t python-test . 
-
-#     - name: login to docker registry
+#     - name: Login to Docker Registry
 #       uses: docker/login-action@v3
 #       with:
-#           username: ${{secrets.DOCKERHUB_USERNAME}}
-#           password: ${{secrets.DOCKERHUB_TOKEN}}
+#         username: ${{ secrets.DOCKERHUB_USERNAME }}
+#         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-#     - name: build and push docker image to registry
-#       uses: docker/build-push-action@v6
+#     - name: Build Docker image
+#       uses: docker/build-push-action@v5  # Downgraded to stable v5
 #       with:
-#           context: .
-#           push: true
-#           tags: ${{ env.IMAGE_NAME_TAG }}
-#           cache-from: type=gha
-#           cache-to: type=gha,mode=max
-
-#     # - name: Pull Image
-#     #   run: docker pull nabeelkm/test:latest
+#         context: .
+#         tags: ${{ env.IMAGE_NAME_TAG }}
+#         load: true  # Makes image available locally
+#         cache-from: type=gha
+#         cache-to: type=gha,mode=max
 
 #     - name: Trivy Vulnerability Scan
 #       uses: aquasecurity/trivy-action@0.29.0
 #       with:
 #         image-ref: ${{ env.IMAGE_NAME_TAG }}
 #         severity: CRITICAL,HIGH
-#         ignore-unfixed: true  # Skips unfixed vulnerabilities
-#         format: table 
+#         ignore-unfixed: true
+#         format: table
+
+#     - name: Push Docker image
+#       uses: docker/build-push-action@v5
+#       with:
+#         tags: ${{ env.IMAGE_NAME_TAG }}
+#         push: true
+#         cache-from: type=gha
 
 #   deploy:
-
 #     runs-on: [self-hosted, local]
+#     needs: [build]
 #     env:
 #       CONTAINER_NAME: python-test
-#       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+#       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}
 #       HOST_PORT: 5000
 #       CONTAINER_PORT: 5000
+      
 #     steps: 
+#     - name: Login to Docker Registry
+#       uses: docker/login-action@v3
+#       with:
+#         username: ${{ secrets.DOCKERHUB_USERNAME }}
+#         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
 #     - name: Pull Image
 #       run: docker pull ${{ env.IMAGE_NAME_TAG }}
 
 #     - name: Stop old containers
-#       run: docker stop $CONTAINER_NAME || true && docker rm $CONTAINER_NAME || true
-        
+#       run: |
+#         docker stop $CONTAINER_NAME || true
+#         docker rm $CONTAINER_NAME || true
+
 #     - name: Deploy
 #       run: |
-#             docker run -d \
-#             -p $HOST_PORT:$CONTAINER_PORT \
-#             --restart unless-stopped \
-#             --name $CONTAINER_NAME \
-#             ${{ env.IMAGE_NAME_TAG }}
+#         docker run -d \
+#           -p $HOST_PORT:$CONTAINER_PORT \
+#           --restart unless-stopped \
+#           --name $CONTAINER_NAME \
+#           ${{ env.IMAGE_NAME_TAG }}
 
-#     - name: View Docker status
-#       run: |
-#           docker ps
 #     - name: Verify deployment
 #       run: |
-#           docker ps
-#           curl --retry 5 --retry-delay 5 -sS http://localhost:$HOST_PORT/
+#         echo "Waiting for container to become healthy..."
+#         sleep 15  # Give application time to initialize
+#         docker ps
+#         docker logs $CONTAINER_NAME  # Add logging inspection
+#         curl --retry 10 --retry-delay 10 --retry-connrefused -sS http://localhost:$HOST_PORT/
 
 #     - name: Cleanup unused images
 #       run: |
-#           docker image prune -a --force --filter "until=24h"
-#           docker system prune --force --filter "until=24h"
-#     # - name: Cleaning Server
-#     #   run: |
-#     #       echo y | docker image prune -a
+#         docker image prune -a --force --filter "until=24h"
+#         docker system prune --force --filter "until=24h"
+
+# # name: Docker Image CI & CD
+
+# # on:
+# #   push:
+# #     branches: 
+# #       - main
+
+
+# # jobs:
+
+# #   build:
+  
+# #     # runs-on: [self-hosted, local]
+# #     runs-on: ubuntu-latest
+# #     env:
+# #       CONTAINER_NAME: python-test
+# #       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+# #       HOST_PORT: 5000
+# #       CONTAINER_PORT: 5000
+# #     steps:
+# #     - name: Checkout
+# #       uses: actions/checkout@v4
+# #       with:
+# #           clean: False
+
+# #     # - uses: sonarsource/sonarqube-scan-action@master    # - name: Cleaning Server
+# #     #   run: |
+# #     #       echo y | docker image prune -a
+      
+# #     #   env:
+# #     #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+# #     #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}    
+      
+# #     # - name: Build the Docker image
+# #     #   run: docker build -t python-test . 
+
+# #     - name: login to docker registry
+# #       uses: docker/login-action@v3
+# #       with:
+# #           username: ${{secrets.DOCKERHUB_USERNAME}}
+# #           password: ${{secrets.DOCKERHUB_TOKEN}}
+
+# #     - name: build and push docker image to registry
+# #       uses: docker/build-push-action@v6
+# #       with:
+# #           context: .
+# #           push: true
+# #           tags: ${{ env.IMAGE_NAME_TAG }}
+# #           cache-from: type=gha
+# #           cache-to: type=gha,mode=max
+
+# #     # - name: Pull Image
+# #     #   run: docker pull nabeelkm/test:latest
+
+# #     - name: Trivy Vulnerability Scan
+# #       uses: aquasecurity/trivy-action@0.29.0
+# #       with:
+# #         image-ref: ${{ env.IMAGE_NAME_TAG }}
+# #         severity: CRITICAL,HIGH
+# #         ignore-unfixed: true  # Skips unfixed vulnerabilities
+# #         format: table 
+
+# #   deploy:
+
+# #     runs-on: [self-hosted, local]
+# #     env:
+# #       CONTAINER_NAME: python-test
+# #       IMAGE_NAME_TAG: nabeelkm/test:${{ github.sha }}  # Unique tag per commit
+# #       HOST_PORT: 5000
+# #       CONTAINER_PORT: 5000
+# #     steps: 
+# #     - name: Pull Image
+# #       run: docker pull ${{ env.IMAGE_NAME_TAG }}
+
+# #     - name: Stop old containers
+# #       run: docker stop $CONTAINER_NAME || true && docker rm $CONTAINER_NAME || true
+        
+# #     - name: Deploy
+# #       run: |
+# #             docker run -d \
+# #             -p $HOST_PORT:$CONTAINER_PORT \
+# #             --restart unless-stopped \
+# #             --name $CONTAINER_NAME \
+# #             ${{ env.IMAGE_NAME_TAG }}
+
+# #     - name: View Docker status
+# #       run: |
+# #           docker ps
+# #     - name: Verify deployment
+# #       run: |
+# #           docker ps
+# #           curl --retry 5 --retry-delay 5 -sS http://localhost:$HOST_PORT/
+
+# #     - name: Cleanup unused images
+# #       run: |
+# #           docker image prune -a --force --filter "until=24h"
+# #           docker system prune --force --filter "until=24h"
+# #     # - name: Cleaning Server
+# #     #   run: |
+# #     #       echo y | docker image prune -a
       
       
   
