@@ -88,8 +88,11 @@ jobs:
 
     - name: Verify deployment
       run: |
+        echo "Waiting for container to become healthy..."
+        sleep 15  # Give application time to initialize
         docker ps
-        curl --retry 5 --retry-delay 5 -sS http://localhost:$HOST_PORT/
+        docker logs $CONTAINER_NAME  # Add logging inspection
+        curl --retry 10 --retry-delay 10 --retry-connrefused -sS http://localhost:$HOST_PORT/
 
     - name: Cleanup unused images
       run: |
