@@ -32,7 +32,7 @@ jobs:
         tags: ${{ env.IMAGE_NAME_TAG }},${{ env.IMAGE_NAME }}:latest  # Fixed variable reference
         load: true
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-to: type=gha,mode=max,compression=zstd,ttl=72h
 
     - name: Trivy Vulnerability Scan
       uses: aquasecurity/trivy-action@0.29.0
