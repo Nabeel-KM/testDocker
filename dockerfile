@@ -19,7 +19,6 @@ COPY --from=build /app/out ./out
 COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./package.json
 
-# RUN npm install
 
 EXPOSE 3000
 
