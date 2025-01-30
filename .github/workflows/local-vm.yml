@@ -19,23 +19,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # - name: Set up Docker Buildx
-    #   uses: docker/setup-buildx-action@v3
-    #   with:
-    #     driver-opts: |
-    #       image=moby/buildkit:latest
-
-    # - name: Login to Docker Registry
-    #   uses: docker/login-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
     - name: Build Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
-        tags: ${{ env.IMAGE_NAME_TAG }},$IMAGE_NAME:latest
+        tags: ${{ env.IMAGE_NAME_TAG }},${{ env.IMAGE_NAME }}:latest  # Fixed variable reference
         load: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -48,36 +36,20 @@ jobs:
         ignore-unfixed: true
         format: table
 
-    # - name: Push Docker image
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     tags: ${{ env.IMAGE_NAME_TAG }},nabeelkm/test:latest
-    #     push: true
-    #     cache-from: type=gha
-
   deploy:
     runs-on: [self-hosted, local]
     needs: [build]
-    # env:
-    #   CONTAINER_NAME: python-test
-    #   HOST_PORT: 3000
-    #   CONTAINER_PORT: 3000
+    env:  # Uncommented env variables
+      CONTAINER_NAME: node-app
+      IMAGE_NAME: node-app-test
+      HOST_PORT: 3000
+      CONTAINER_PORT: 3000
       
     steps: 
-    # - name: Login to Docker Registry
-    #   uses: docker/login-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    # - name: Pull Image
-    #   run: docker pull nabeelkm/test:latest
-
     - name: Stop old containers
       run: |
         docker stop $CONTAINER_NAME || true
         docker rm $CONTAINER_NAME || true
-
     - name: Deploy
       run: |
         docker run -d \
@@ -85,7 +57,6 @@ jobs:
           --restart unless-stopped \
           --name $CONTAINER_NAME \
           $IMAGE_NAME:latest
-
     - name: Verify deployment
       run: |
         echo "Health check starting..."
@@ -100,7 +71,6 @@ jobs:
         done
         echo "Health check failed after 10 attempts"
         exit 1
-
     - name: Cleanup unused images
       run: |
         docker image prune -a --force --filter "until=24h"
@@ -110,32 +80,24 @@ jobs:
     runs-on: [self-hosted, local]
     needs: [deploy]
     if: failure() && needs.deploy.result == 'failure'
-    # env:
-    #   CONTAINER_NAME: python-test
-    #   HOST_PORT: 5000
-    #   CONTAINER_PORT: 5000
+    env:  # Uncommented env variables
+      CONTAINER_NAME: node-app
+      IMAGE_NAME: node-app-test
+      HOST_PORT: 3000
+      CONTAINER_PORT: 3000
       
     steps:
-    # - name: Login to Docker Registry
-    #   uses: docker/login-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
     - name: Stop faulty container
       run: |
         docker stop $CONTAINER_NAME || true
         docker rm $CONTAINER_NAME || true
-
     - name: Rollback to stable version
       run: |
-        
         docker run -d \
           -p $HOST_PORT:$CONTAINER_PORT \
           --restart unless-stopped \
           --name $CONTAINER_NAME \
           $IMAGE_NAME:stable
-
     - name: Verify rollback
       run: |
         echo "Verifying rollback..."
