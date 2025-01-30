@@ -1,0 +1,25 @@
+.inputWrapper {
+  @apply w-full flex-col rounded-lg  bg-transparent flex items-start box-border;
+  user-select: none;
+  span {
+    @apply px-1 box-border w-full flex items-center justify-between text-[11px] font-normal leading-[18px] text-[#2D383F];
+    label{
+      @apply flex items-center gap-x-1;
+    }
+  }
+  input {
+    @apply block w-full rounded-lg h-12 p-3 px-5 outline-none border border-[#c2c7cd];
+   &::placeholder {
+      color: #a6a8a3;
+    }
+  }
+  p{
+    @apply text-[10px] text-red-500 font-normal;
+  }
+  .bottomTitle{
+    @apply w-full px-1 box-border flex items-center gap-x-2 mt-1 text-[14px] font-normal leading-normal text-[#000];
+    .amount{
+      @apply text-primary;
+    }
+  }
+}

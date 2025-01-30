@@ -1,0 +1,73 @@
+.sliderContainer {
+  @apply w-[80%] lg:w-[95%] xl:w-[80%] max-w-[700px] flex justify-center items-center h-full;
+
+  .card {
+    @apply w-[90%]  box-border p-2 bg-white rounded-md min-h-[447px] flex flex-col;
+
+    .header {
+      @apply w-full h-[244px] rounded-md relative;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+
+      .text {
+        @apply absolute top-4 left-0 px-[5px] py-[2px] w-[70px] h-[25px] bg-green-600 rounded-sm flex justify-center items-center;
+
+        label {
+          @apply font-bold flex items-center gap-x-2 text-[10px] text-white leading-normal;
+        }
+      }
+
+      .heart {
+        @apply absolute top-4 right-4;
+
+        .icon {
+          @apply text-[14px] text-white cursor-pointer hover:text-primary;
+        }
+      }
+    }
+
+    .cardBody {
+      @apply w-full mt-6;
+
+      .heading {
+        @apply w-full flex items-center justify-between;
+
+        .left {
+          @apply text-[16px] font-bold leading-[36px];
+        }
+
+        .btn {
+          @apply cursor-pointer min-w-[86px] w-[86px] text-primary hover:text-white h-[24px] flex justify-center items-center border border-primary hover:bg-primary rounded-md text-[10px] font-normal leading-[20px];
+        }
+      }
+
+      .address {
+        @apply text-[12px] font-medium leading-[24px];
+      }
+
+      .size {
+        @apply mt-2 w-full flex items-center gap-x-[10px];
+
+        .sizeOne {
+          @apply flex items-center gap-1;
+
+          label {
+            @apply text-[12px] font-normal leading-[24px];
+          }
+        }
+
+        .sizeTwo {
+          @apply flex items-center gap-1;
+
+          label {
+            @apply text-[12px] font-normal leading-[24px];
+          }
+        }
+
+        .sizeFrom {
+          @apply text-[12px] font-normal leading-[21px];
+        }
+      }
+    }
+  }
+}

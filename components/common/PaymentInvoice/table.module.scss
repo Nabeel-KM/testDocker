@@ -1,0 +1,115 @@
+.wrapper{
+  @apply w-full overflow-x-scroll max-h-[530px];
+.tablee {
+  @apply min-w-[800px] w-full text-sm text-left pt-10 snap-x rounded-lg ;
+  thead {
+    @apply border-b border-[#E0E8F4];
+    tr {
+      th {
+        @apply pl-[1.9rem] pr-[1.5rem] py-3 text-[16px] whitespace-nowrap font-bold leading-[39px] text-[#2D383F];
+      }
+    }
+  }
+  tbody {
+    tr {
+      @apply hover:bg-[#eaf9f9] cursor-pointer  border-b border-[#E0E8F4] box-border;
+      td {
+        @apply px-6 text-[16px] leading-[33px] text-[#2D383F] py-5;
+          .verification{
+            @apply capitalize flex gap-x-1 items-center text-[#2C82FD];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .requestDecline{
+            @apply capitalize flex gap-x-1 items-center text-[#B60000];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .approved{
+            @apply capitalize flex gap-x-1 items-center text-primary;
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .processing{
+            @apply  flex gap-x-1 items-center text-[#F1AE00];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .pending{
+            @apply capitalize flex gap-x-1 items-center text-[#FC7F69];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .Invoice{
+            @apply capitalize max-w-[200px] text-white justify-center flex gap-x-2 items-center bg-primary rounded-lg px-1;
+            .Icon{
+              @apply text-[20px] text-white;
+            }
+          }
+
+      }
+    } 
+  }
+}
+.statusAndVoice{
+  @apply min-w-[1000px] w-full text-sm text-left pt-10 snap-x rounded-lg ;
+  thead {
+    @apply border-b border-[#E0E8F4];
+    tr {
+      th {
+        @apply pl-[1.9rem] pr-[1.5rem] py-3 text-[16px] whitespace-nowrap font-bold leading-[39px] text-[#2D383F];
+      }
+    }
+  }
+  tbody {
+    tr {
+      @apply hover:bg-[#eaf9f9] cursor-pointer  border-b border-[#E0E8F4] box-border;
+      td {
+        @apply px-6 text-[16px] leading-[33px] text-[#2D383F] py-5;
+          .verification{
+            @apply capitalize flex gap-x-1 items-center text-[#2C82FD];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .requestDecline{
+            @apply capitalize flex gap-x-1 items-center text-[#B60000];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .approved{
+            @apply capitalize flex gap-x-1 items-center text-primary;
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .processing{
+            @apply  flex gap-x-1 items-center text-[#F1AE00];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .pending{
+            @apply capitalize flex gap-x-1 items-center text-[#FC7F69];
+            img{
+              @apply w-[23px] h-[23px];
+            }
+          }
+          .Invoice{
+            @apply capitalize max-w-[200px] text-white justify-center flex gap-x-2 items-center bg-primary rounded-lg px-1;
+            .Icon{
+              @apply text-[20px] text-white;
+            }
+          }
+
+      }
+    } 
+  }
+}
+}
