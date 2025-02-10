@@ -52,7 +52,7 @@ jobs:
       CONTAINER_NAME: node-app
       IMAGE_NAME: node-app-test
       HOST_PORT: 3000
-      CONTAINER_PORT: 3000
+      CONTAINER_PORT: 8091
       
     steps: 
     - name: Stop old containers
