@@ -9,6 +9,7 @@ env:  # Uncommented env variables
   IMAGE_NAME: node-app-test
   HOST_PORT: 3000
   CONTAINER_PORT: 8091
+  IMAGE_NAME_TAG: node-app-test:${{ github.sha }}
 
 jobs:
   build:
