@@ -4,16 +4,21 @@ on:
   push:
     branches: 
       - node-app
+env:  # Uncommented env variables
+  CONTAINER_NAME: node-app
+  IMAGE_NAME: node-app-test
+  HOST_PORT: 3000
+  CONTAINER_PORT: 8091
 
 jobs:
   build:
     runs-on: [self-hosted, local]
-    env:
-      CONTAINER_NAME: node-app
-      IMAGE_NAME: node-app-test
-      IMAGE_NAME_TAG: node-app-test:${{ github.sha }}
-      HOST_PORT: 3000
-      CONTAINER_PORT: 8091
+    # env:
+    #   CONTAINER_NAME: node-app
+    #   IMAGE_NAME: node-app-test
+    #   IMAGE_NAME_TAG: node-app-test:${{ github.sha }}
+    #   HOST_PORT: 3000
+    #   CONTAINER_PORT: 8091
       
     steps:
     - name: Checkout
@@ -48,11 +53,11 @@ jobs:
   deploy:
     runs-on: [self-hosted, local]
     needs: [build]
-    env:  # Uncommented env variables
-      CONTAINER_NAME: node-app
-      IMAGE_NAME: node-app-test
-      HOST_PORT: 3000
-      CONTAINER_PORT: 8091
+    # env:  # Uncommented env variables
+    #   CONTAINER_NAME: node-app
+    #   IMAGE_NAME: node-app-test
+    #   HOST_PORT: 3000
+    #   CONTAINER_PORT: 8091
       
     steps: 
     - name: Stop old containers
@@ -89,11 +94,11 @@ jobs:
     runs-on: [self-hosted, local]
     needs: [deploy]
     if: failure() && needs.deploy.result == 'failure'
-    env:  # Uncommented env variables
-      CONTAINER_NAME: node-app
-      IMAGE_NAME: node-app-test
-      HOST_PORT: 3000
-      CONTAINER_PORT: 3000
+    # env:  # Uncommented env variables
+    #   CONTAINER_NAME: node-app
+    #   IMAGE_NAME: node-app-test
+    #   HOST_PORT: 3000
+    #   CONTAINER_PORT: 8091
       
     steps:
     - name: Stop faulty container
