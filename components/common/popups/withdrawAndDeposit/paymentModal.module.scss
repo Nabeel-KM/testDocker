@@ -1,9 +1,0 @@
-.wrapper{
-  @apply w-full h-full flex flex-col justify-center items-center;
-  .icon{
-    @apply  w-full flex justify-center items-center mt-[7px] text-[49px] text-primary;
-  }
-  .heading{
-    @apply text-white  text-[12px] xl:text-[18px] font-semibold leading-[18px] mt-[10px];
-  }
-}

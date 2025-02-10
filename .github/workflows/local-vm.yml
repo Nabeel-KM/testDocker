@@ -13,7 +13,7 @@ jobs:
       IMAGE_NAME: node-app-test
       IMAGE_NAME_TAG: node-app-test:${{ github.sha }}
       HOST_PORT: 3000
-      CONTAINER_PORT: 3000
+      CONTAINER_PORT: 8091
       
     steps:
     - name: Checkout

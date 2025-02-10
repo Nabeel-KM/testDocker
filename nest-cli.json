@@ -1,0 +1,23 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "plugins": [
+    {
+      "name": "@nestjs/swagger",
+      "options": {
+        "classValidatorShim": false,
+        "introspectComments": true
+      }
+    }
+  ],
+  "compilerOptions": {
+    "assets": [
+      {
+        "include": "../client",
+        "outDir": "dist/client",
+        "watchAssets": true
+      }
+    ],
+    "watchAssets": true
+  }
+}
