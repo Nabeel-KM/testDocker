@@ -2,8 +2,7 @@ name: Docker Image CI & CD with Rollback
 
 on:
   push:
-    branches: 
-      - node-app
+    branches: [node-app]
 env:  # Uncommented env variables
   CONTAINER_NAME: node-app
   IMAGE_NAME: node-app-test
