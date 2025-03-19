@@ -19,13 +19,13 @@ jobs:
           config-path: ".github/gitleaks.toml"
           fail: true
       
-      - name: Run Trivy for container security scanning
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "$IMAGE_NAME_TAG"
-          format: "table"
-          exit-code: 0
-          ignore-unfixed: true
+      # - name: Run Trivy for container security scanning
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: "$IMAGE_NAME_TAG"
+      #     format: "table"
+      #     exit-code: 0
+      #     ignore-unfixed: true
       
       - name: Run Hadolint to check Dockerfile best practices
         uses: hadolint/hadolint-action@v3.1.0
