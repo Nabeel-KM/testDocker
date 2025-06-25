@@ -184,7 +184,7 @@ jobs:
         with:
           target: "http://localhost:${{ env.HOST_PORT }}"
           fail_action: false
-          publish_report: false
+          allow_issue_writing: false
 
 
       - name: Upload ZAP Reports
