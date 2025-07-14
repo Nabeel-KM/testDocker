@@ -72,7 +72,7 @@ pipeline {
                     -p ${HOST_PORT}:${CONTAINER_PORT} \
                     --restart unless-stopped \
                     --name ${CONTAINER_NAME} \
-                    ${IMAGE_NAME}:latest
+                    --rm ${IMAGE_NAME}:latest
                 '''
             }
         }
