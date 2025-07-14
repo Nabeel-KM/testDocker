@@ -1,6 +1,6 @@
 def gv
 pipeline {
-    agent any
+    agent 
     {
        label 'tajir-media-agent'
     }
