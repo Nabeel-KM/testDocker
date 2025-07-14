@@ -1,9 +1,9 @@
 def gv
 pipeline {
     agent any
-    //{
-      //  label 'EC2'
-    //}
+    {
+       label 'tajir-media-agent'
+    }
     environment{
         NEW_VERSION = '2.3.5'
     }
